@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::models::processed_request::ProcessedRequest;
 
+#[derive(Clone)]
 pub struct AppState{
     pub requests: HashMap<String,ProcessedRequest>
 }
