@@ -2,8 +2,7 @@ use axum::{
     body::Body, 
     extract::State, 
     http::{
-        HeaderMap, Request, StatusCode
-    }, 
+        HeaderMap, Request, StatusCode}, 
     middleware::Next, 
     response::{IntoResponse, Response},
 };
@@ -30,11 +29,18 @@ pub async fn idempotency_middleware(
     if let Some(res) = data.requests.get(&key) {
         return (
             StatusCode::OK,
-            axum::Json(res)
+            res.message.clone()
         ).into_response();
     }
+    drop(data);
 
-    next.run(request).await
+
+    let mut req = request;
+
+    req.extensions_mut().insert(key);
+
+    next.run(req).await
+
 }
 
 
