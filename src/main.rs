@@ -7,13 +7,14 @@ mod models;
 use axum::{
     Router, 
     middleware::from_fn_with_state,
-    routing::get
+    routing::{get, post}
 };
 use tokio::sync::Mutex;
 use std::sync::Arc;
 
 use handlers::payment_handler::{
     root,
+    payment
 };
 use middleware::idempotency_middleware::idempotency_middleware;
 
@@ -25,8 +26,10 @@ async fn main() {
     let state = Arc::new(Mutex::new(AppState::new()));
 
     let app = Router::new()
-    .route("/", get(root))
+    .route("/payment", post(payment))
+    .with_state(state.clone())
     .route_layer(from_fn_with_state(state, idempotency_middleware))
+    .route("/", get(root))
     ;
     
 
