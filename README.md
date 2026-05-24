@@ -227,3 +227,22 @@ Você pode testar a funcionalidade de idempotência usando `curl`:
 ## 👨‍💻 Autor
 
 Projeto desenvolvido para estudo de arquiteturas resilientes e concorrência em Rust por HIGOR ESAÚ.
+
+---
+
+## 🚀 Testando com Postman
+
+Para facilitar os testes e a exploração da API, você pode utilizar a coleção do Postman disponível no link abaixo. Esta coleção inclui as três requisições principais para interagir com a API de idempotência.
+
+[Coleção Postman: Rust Idempotency API](https://www.postman.com/blue-comet-585779/workspace/rust-idempotency-api/collection/38782075-fdd7e30e-b42f-493a-a4fa-5d7c4d1c9d6d?action=share&source=copy-link&creator=38782075)
+
+### Requisições Incluídas:
+
+1.  **`POST /payment`**: Utilize esta requisição para simular o processamento de um pagamento. Lembre-se de incluir o header `Idempotency-Key` para testar a funcionalidade de idempotência.
+
+2.  **`GET /process`**: Este endpoint permite visualizar todas as requisições que foram processadas ou estão em processamento, exibindo o estado atual do sistema de idempotência.
+
+3.  **`GET /`**: Um simples health check para verificar se a API está respondendo corretamente.
+
+---
+
