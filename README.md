@@ -181,7 +181,7 @@ Para rodar este projeto em sua máquina local, siga os passos abaixo:
 
 2.  **Clonar o Repositório**:
     ```bash
-    git clone https://github.com/higor-areal/rust-idempotency-api.git 
+    git clone [https://github.com/higor-areal/rust-idempotency-api](https://github.com/higor-areal/rust_idempotency.git)
     cd rust-idempotency-api
     ```
 
