@@ -1,20 +1,27 @@
 use axum::{
-    body::Body, 
-    extract::State, 
-    http::{
-        HeaderMap, Request, StatusCode}, 
-    middleware::Next, 
+    body::{Body, to_bytes},
+    extract::State,
+    http::{HeaderMap, Request, StatusCode},
+    middleware::Next,
     response::{IntoResponse, Response},
 };
-
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use crate::state::app_state::AppState;
+use crate::{
+    models::{
+        payment::Payment, 
+        processed_request::{
+            ProcessedRequest,
+        }
+    }, 
+    state::app_state::AppState,
+    responses::response::response_created
+};
 
 pub async fn idempotency_middleware(
     State(state): State<Arc<Mutex<AppState>>>,
-    request: Request<Body>,
+    mut request: Request<Body>,
     next: Next,
 ) -> Response {
 
@@ -23,24 +30,47 @@ pub async fn idempotency_middleware(
         None => return bad_request("Idempotency-Key ausente")
     };
 
+    //nesse trecho aqui eu só fiz o que a ia pediu, até entendo que middleware não aceita dados como json mas que coisa estranha
+    // ######
+    let body = std::mem::take(request.body_mut());
 
-    let data = state.lock().await;
+    let bytes = match to_bytes(body, usize::MAX).await {
+        Ok(bytes) => bytes,
+        Err(_) => return bad_request("Erro ao ler body"),
+    };
+
+    let mut payment: Payment = match serde_json::from_slice(&bytes) {
+        Ok(payment) => payment,
+        Err(_) => return bad_request("JSON inválido"),
+    };
+
+    *request.body_mut() = Body::from(bytes.clone());
+
+    // ######
+
+    let hash = match payment.hash() {
+        Some(hash) => hash,
+        None => return bad_request("Erro ao gerar hash")
+    };
+
+    let mut data = state.lock().await;
 
     if let Some(res) = data.requests.get(&key) {
-        return (
-            StatusCode::OK,
-            res.message.clone()
-        ).into_response();
+        return request_proccessed(res, hash);
     }
+
+    let payload = match ProcessedRequest::new(hash) {
+        Some(payload) => payload,
+        None => return bad_request("Erro ao criar payload")
+    };
+
+    data.requests.insert(key.clone(), payload);
+
     drop(data);
 
+    request.extensions_mut().insert(key);
 
-    let mut req = request;
-
-    req.extensions_mut().insert(key);
-
-    next.run(req).await
-
+    next.run(request).await
 }
 
 
@@ -55,4 +85,17 @@ fn get_idempotency_key(header: &HeaderMap) -> Option<String> {
 
 fn bad_request(msg: &str) -> Response {
     (StatusCode::BAD_REQUEST, msg.to_string()).into_response()
+}
+
+fn request_proccessed(res: &ProcessedRequest, hash: String) -> Response{
+
+    if res.payload_hash != hash {
+        return (
+            StatusCode::CONFLICT,
+            "Payload diferente"
+        ).into_response();
+    }
+
+    //aqui eu devo achar um jeito de pendurar esse request até que o status de res.status seja diferente de None, mas por enquanto vamos deixar simples
+    response_created(res.clone())
 }
