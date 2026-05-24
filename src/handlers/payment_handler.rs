@@ -7,7 +7,7 @@ use axum::{
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use crate::{models::payment::Payment, responses::response::response_creating, state::app_state::AppState};
+use crate::{models::{payment::Payment, processed_request::ProcessedRequest}, responses::response::response_creating, state::app_state::AppState};
 use crate::responses::response::response;
 use crate::models::processed_request::{RequestStatus};
 
@@ -39,4 +39,12 @@ pub async fn payment(
 
     response_creating(process.clone())
 
+}
+
+pub async fn proccess(State(state): State<Arc<Mutex<AppState>>>) -> Json<Vec<ProcessedRequest>>{
+    let data = state.lock().await;
+
+    let res: Vec<ProcessedRequest> = data.requests.values().cloned().collect();
+
+    Json(res)
 }

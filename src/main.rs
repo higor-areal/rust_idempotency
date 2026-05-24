@@ -14,7 +14,8 @@ use std::sync::Arc;
 
 use handlers::payment_handler::{
     root,
-    payment
+    payment,
+    proccess
 };
 use middleware::idempotency_middleware::idempotency_middleware;
 
@@ -27,8 +28,9 @@ async fn main() {
 
     let app = Router::new()
     .route("/payment", post(payment))
-    .with_state(state.clone())
-    .route_layer(from_fn_with_state(state, idempotency_middleware))
+    .route_layer(from_fn_with_state(state.clone(), idempotency_middleware))
+    .route("/proccess", get(proccess))
+    .with_state(state)
     .route("/", get(root))
     ;
     
