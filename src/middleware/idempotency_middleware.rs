@@ -26,8 +26,8 @@ pub async fn idempotency_middleware(
 ) -> Response {
 
     let key = match get_idempotency_key(request.headers()) {
-        Some(key) => key,
-        None => return bad_request("Idempotency-Key ausente")
+        Some(key) if valid_key(&key) => key,
+        _ => return bad_request("Idempotency-Key inválida"),
     };
 
     //nesse trecho aqui eu só fiz o que a ia pediu, até entendo que middleware não aceita dados como json mas que coisa estranha
@@ -81,6 +81,21 @@ fn get_idempotency_key(header: &HeaderMap) -> Option<String> {
         .to_str()
         .ok()
         .map(String::from)
+}
+
+//validação simples de key
+pub fn valid_key(key: &str) -> bool {
+    if key.is_empty() {
+        return false;
+    }
+
+    if key.len() < 16 || key.len() > 64 {
+        return false;
+    }
+
+    key.chars().all(|c| {
+        c.is_ascii_alphanumeric() || c == '-' || c == '_'
+    })
 }
 
 fn bad_request(msg: &str) -> Response {
