@@ -181,7 +181,7 @@ Para rodar este projeto em sua máquina local, siga os passos abaixo:
 
 2.  **Clonar o Repositório**:
     ```bash
-    git clone https://github.com/higor-areal/rust-idempotency-api.git # (Exemplo, substitua pelo seu)
+    git clone https://github.com/higor-areal/rust-idempotency-api.git 
     cd rust-idempotency-api
     ```
 
@@ -226,4 +226,4 @@ Você pode testar a funcionalidade de idempotência usando `curl`:
 
 ## 👨‍💻 Autor
 
-Projeto desenvolvido para estudo de arquiteturas resilientes e concorrência em Rust por Manus AI Manus.
+Projeto desenvolvido para estudo de arquiteturas resilientes e concorrência em Rust por HIGOR ESAÚ.
